@@ -97,7 +97,6 @@ World = function(len) {
 
     for (var i = 0; i < indexes.length; i++) {
       var cell = grid_[indexes[i]];
-      console.log(cell + " " + i + " " + indexes[i] + " " + Math.floor(x/len) + " " + y%len);  
       if (cell.alive) counter++;
     }
     return counter;
