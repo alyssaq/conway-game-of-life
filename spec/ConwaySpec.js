@@ -124,9 +124,8 @@ describe("Conway", function() {
       expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(3);
       expect(world.getCellAt(1, 1).alive).toBeFalsy();
       world.execute();
-       expect(world.numLiveNeighbourCellsAt(1, 0)).toEqual(1);
+      expect(world.numLiveNeighbourCellsAt(1, 0)).toEqual(1);
       expect(world.getCellAt(1, 1).alive).toBeTruthy();
-     
     });
   });
 });
