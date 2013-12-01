@@ -1,5 +1,15 @@
 var Cell, World;
 
+/*
+Conway's Game of Life
+
+The world is representated as an 1d array of Cells:
+00 01 02 03 - 0  1  2  3
+10 11 12 13 - 4  5  6  7
+20 21 22 23 - 8  9  10 11
+30 31 32 33 - 12 13 14 15
+*/
+
 Cell = function() {
   var me = {};
 
@@ -10,7 +20,8 @@ Cell = function() {
 
 World = function(len) {
   var me = {}, 
-    grid_ = [], size_ = len * len;
+    grid_ = [], //Finite world representation 
+    size_ = len * len;
 
   init = function() {
     for (var i = 0; i < size_; i++) {
@@ -24,7 +35,7 @@ World = function(len) {
 
   isWithinBoundaries = function(x, y) {
     if (x < 0 || y < 0 || 
-        x > len || y > len) {
+        x >= len || y >= len) {
         return false;
     }
     return true;
@@ -41,15 +52,6 @@ World = function(len) {
     return grid_[getGridIdx(x, y)];
   },
 
-  /*
-  00 01 02 03 - 0  1  2  3
-  10 11 12 13 - 4  5  6  7
-  20 21 22 23 - 8  9  10 11
-  30 31 32 33 - 12 13 14 15
-
-  Input: position of a cell. E.g. 10
-  Output: Array of neighbour coordinates within bounds
-  */
   getNeighbourIndexes = function(x, y) {
     var numIdexes = 8, i = 0, pair,
     indexes = [[x - 1, y - 1],
@@ -70,22 +72,8 @@ World = function(len) {
     }
 
     return indexes;
-  },
-  
-  applyLiveCellRules = function(numLiveNeighbours, cell) {
-   if (numLiveNeighbours <= 1 || numLiveNeighbours >= 4) {
-      cell.alive = false; 
-    } else {
-      cell.alive = true; 
-    }
-  },
-
-  applyDeadCellRules = function(numLiveNeighbours, cell) {
-    if (numLiveNeighbours === 3) {
-      cell.alive = true;
-    }
   };
-
+  
   me.getCellAt = checkBoundariesApplyFunc(getCellAt);
 
   me.toggleCellStateAt = function(x, y) {
@@ -101,11 +89,15 @@ World = function(len) {
   }
 
   me.numLiveNeighbourCells = function(x, y) {
-    var indexes = getNeighbourIndexes(x, y),
-      counter = 0;
+    var cell = me.getCellAt(x, y),
+      counter = 0, indexes;
+    if (!cell) return counter;
+
+    indexes = getNeighbourIndexes(x, y);
 
     for (var i = 0; i < indexes.length; i++) {
       var cell = grid_[indexes[i]];
+      console.log(cell + " " + i + " " + indexes[i] + " " + Math.floor(x/len) + " " + y%len);  
       if (cell.alive) counter++;
     }
     return counter;
@@ -113,18 +105,23 @@ World = function(len) {
 
   me.execute = function() {
     var cell, numLiveNeighbours,
-      nextGenGrid = grid_;
-    for (var i = 0; i < size_; i++) {
-      cell = grid_[i],
-      nextGenCell = nextGenGrid[i];
-      numLiveNeighbours = numLiveNeighbourCells(i);
-      cell.alive ? applyLiveCellRules(numLiveNeighbours, cell)
-                 : applyDeadCellRules(numLiveNeighbours, cell);
+      idxes = [], i;
+  
+    for (i = 0; i < size_; i++) {
+      cell = grid_[i];
+      numLiveNeighbours = me.numLiveNeighbourCells(Math.floor(i/len), i%len);
+      if ( (cell.alive && 
+           (numLiveNeighbours <= 1 || numLiveNeighbours >= 4)) ||
+           (!cell.live && numLiveNeighbours === 3) ) {
+        idxes.push(i);
+      }
+    }
+
+    for (i = 0; i < idxes.length; i++) {
+      grid_[idxes[i]].alive = !grid_[idxes[i]].alive;
     }
   }
 
   init();
   return me;
 };
-
-

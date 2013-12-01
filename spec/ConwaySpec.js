@@ -12,11 +12,14 @@ describe("Conway", function() {
   describe("should get the correct individual cell state", function() {
     it("is false by default", function() {
       expect(world.getCellAt(0, 0).alive).toBeFalsy();
+      expect(world.getCellAt(0, 4).alive).toBeFalsy();
+      expect(world.getCellAt(4, 0).alive).toBeFalsy();
+      expect(world.getCellAt(4, 4).alive).toBeFalsy();
     });
 
     it("is undefined outside the world boundaries", function() {
       expect(world.getCellAt(-1, -1)).toBeUndefined();
-      expect(world.getCellAt(5, 5)).toBeUndefined();
+      expect(world.getCellAt(5, 0)).toBeUndefined();
     });
   });
 
@@ -50,6 +53,17 @@ describe("Conway", function() {
       expect(world.numLiveNeighbourCells(1, 1)).toEqual(0);
     });
 
+    it("should have correct number of live neighbours at corner", function() {
+      world.toggleCellStateAt(1, 1);
+      world.toggleCellStateAt(-1, 1);
+      world.toggleCellStateAt(1, 0);
+      world.toggleCellStateAt(0, 0);
+      expect(world.numLiveNeighbourCells(0, 0)).toEqual(2);
+      expect(world.numLiveNeighbourCells(0, 4)).toEqual(0);
+      expect(world.numLiveNeighbourCells(4, 0)).toEqual(0);
+      expect(world.numLiveNeighbourCells(4, 4)).toEqual(0);
+    });
+
     it("should have correct number of live neighbours", function() {
       world.toggleCellStateAt(0, 0);
       expect(world.numLiveNeighbourCells(1, 1)).toEqual(1);
@@ -69,5 +83,46 @@ describe("Conway", function() {
       expect(world.numLiveNeighbourCells(1, 1)).toEqual(8);
     });
 
+    it("should have no live neighbours outside boundaries", function() {
+      expect(world.numLiveNeighbourCells(-1, -1)).toEqual(0);
+      expect(world.numLiveNeighbourCells(4, 5)).toEqual(0);
+    });
+
+  });
+
+  describe("should execute the 4 rules correctly", function() {
+    beforeEach(function() {
+      world = new World(5);
+      world.toggleCellStateAt(0, 0);
+      world.toggleCellStateAt(1, 0);
+    });
+
+    it("rule 1 - kill the live cell if there are less than 2 live neighbours", function() {
+      expect(world.getCellAt(1, 0).alive).toBeTruthy();
+      world.execute();
+      expect(world.getCellAt(1, 0).alive).toBeFalsy();
+    });
+
+    it("rule 2 - live cell remains alive if there are 2 or 3 live neighbours", function() {
+      world.toggleCellStateAt(2, 0);
+      expect(world.numLiveNeighbourCells(1, 0)).toEqual(2);
+      world.execute();
+      expect(world.getCellAt(1, 0).alive).toBeTruthy();
+    });
+
+    it("rule 3 - kill the live if there are greater than 3 live neighbours", function() {
+      world.toggleCellStateAt(2, 0);
+      world.toggleCellStateAt(1, 1);
+      expect(world.numLiveNeighbourCells(1, 1)).toEqual(3);
+      world.execute();
+      expect(world.getCellAt(1, 1).alive).toBeFalsy();
+    });
+
+    it("rule 4 - revive the dead cell if there are 3 live neighbours", function() {
+      world.toggleCellStateAt(2, 0);
+      world.execute();
+      expect(world.getCellAt(1, 1).alive).toBeTruthy();
+      expect(world.numLiveNeighbourCells(1, 0)).toEqual(1);
+    });
   });
 });
