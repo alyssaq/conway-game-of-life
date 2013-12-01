@@ -50,7 +50,7 @@ describe("Conway", function() {
 
   describe("should get correct number of live neighbour cells", function() {
     it("should have no live neighbours by default", function() {
-      expect(world.numLiveNeighbourCells(1, 1)).toEqual(0);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(0);
     });
 
     it("should have correct number of live neighbours at corner", function() {
@@ -58,34 +58,34 @@ describe("Conway", function() {
       world.toggleCellStateAt(-1, 1);
       world.toggleCellStateAt(1, 0);
       world.toggleCellStateAt(0, 0);
-      expect(world.numLiveNeighbourCells(0, 0)).toEqual(2);
-      expect(world.numLiveNeighbourCells(0, 4)).toEqual(0);
-      expect(world.numLiveNeighbourCells(4, 0)).toEqual(0);
-      expect(world.numLiveNeighbourCells(4, 4)).toEqual(0);
+      expect(world.numLiveNeighbourCellsAt(0, 0)).toEqual(2);
+      expect(world.numLiveNeighbourCellsAt(0, 4)).toEqual(0);
+      expect(world.numLiveNeighbourCellsAt(4, 0)).toEqual(0);
+      expect(world.numLiveNeighbourCellsAt(4, 4)).toEqual(0);
     });
 
     it("should have correct number of live neighbours", function() {
       world.toggleCellStateAt(0, 0);
-      expect(world.numLiveNeighbourCells(1, 1)).toEqual(1);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(1);
       world.toggleCellStateAt(0, 1);
-      expect(world.numLiveNeighbourCells(1, 1)).toEqual(2);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(2);
       world.toggleCellStateAt(0, 2);
-      expect(world.numLiveNeighbourCells(1, 1)).toEqual(3);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(3);
       world.toggleCellStateAt(1, 0);
-      expect(world.numLiveNeighbourCells(1, 1)).toEqual(4);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(4);
       world.toggleCellStateAt(1, 2);
-      expect(world.numLiveNeighbourCells(1, 1)).toEqual(5);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(5);
       world.toggleCellStateAt(2, 0);
-      expect(world.numLiveNeighbourCells(1, 1)).toEqual(6);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(6);
       world.toggleCellStateAt(2, 1);
-      expect(world.numLiveNeighbourCells(1, 1)).toEqual(7);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(7);
       world.toggleCellStateAt(2, 2);
-      expect(world.numLiveNeighbourCells(1, 1)).toEqual(8);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(8);
     });
 
     it("should have no live neighbours outside boundaries", function() {
-      expect(world.numLiveNeighbourCells(-1, -1)).toEqual(0);
-      expect(world.numLiveNeighbourCells(4, 5)).toEqual(0);
+      expect(world.numLiveNeighbourCellsAt(-1, -1)).toEqual(0);
+      expect(world.numLiveNeighbourCellsAt(4, 5)).toEqual(0);
     });
 
   });
@@ -105,7 +105,7 @@ describe("Conway", function() {
 
     it("rule 2 - live cell remains alive if there are 2 or 3 live neighbours", function() {
       world.toggleCellStateAt(2, 0);
-      expect(world.numLiveNeighbourCells(1, 0)).toEqual(2);
+      expect(world.numLiveNeighbourCellsAt(1, 0)).toEqual(2);
       world.execute();
       expect(world.getCellAt(1, 0).alive).toBeTruthy();
     });
@@ -113,7 +113,7 @@ describe("Conway", function() {
     it("rule 3 - kill the live if there are greater than 3 live neighbours", function() {
       world.toggleCellStateAt(2, 0);
       world.toggleCellStateAt(1, 1);
-      expect(world.numLiveNeighbourCells(1, 1)).toEqual(3);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(3);
       world.execute();
       expect(world.getCellAt(1, 1).alive).toBeFalsy();
     });
@@ -122,7 +122,7 @@ describe("Conway", function() {
       world.toggleCellStateAt(2, 0);
       world.execute();
       expect(world.getCellAt(1, 1).alive).toBeTruthy();
-      expect(world.numLiveNeighbourCells(1, 0)).toEqual(1);
+      expect(world.numLiveNeighbourCellsAt(1, 0)).toEqual(1);
     });
   });
 });

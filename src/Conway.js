@@ -52,7 +52,7 @@ World = function(len) {
     return grid_[getGridIdx(x, y)];
   },
 
-  getNeighbourIndexes = function(x, y) {
+  getNeighboursAt = function(x, y) {
     var numIdexes = 8, i = 0, pair,
     indexes = [[x - 1, y - 1],
                [x - 1, y],
@@ -66,7 +66,7 @@ World = function(len) {
     while (i < numIdexes) {
       pair = indexes.shift();  
       if (isWithinBoundaries(pair[0], pair[1])) {
-        indexes.push(getGridIdx(pair[0], pair[1]));
+        indexes.push(grid_[getGridIdx(pair[0], pair[1])]);
       }
       i++;
     }
@@ -81,24 +81,16 @@ World = function(len) {
     cell.alive = !cell.alive;
   }
 
-  me.numLiveCells = function() {
-    return grid_.reduce(function(counter, cell) {
+  me.numLiveCells = function(cellArray) {
+    var arr = cellArray || grid_;
+    return arr.reduce(function(counter, cell) {
       return (cell.alive) ? counter + 1 : counter;
     }, 0);
   }
 
-  me.numLiveNeighbourCells = function(x, y) {
-    var cell = me.getCellAt(x, y),
-      counter = 0, indexes;
-    if (!cell) return counter;
-
-    indexes = getNeighbourIndexes(x, y);
-
-    for (var i = 0; i < indexes.length; i++) {
-      var cell = grid_[indexes[i]];
-      if (cell.alive) counter++;
-    }
-    return counter;
+  me.numLiveNeighbourCellsAt = function(x, y) {
+    return me.getCellAt(x, y) ? 
+           me.numLiveCells(getNeighboursAt(x, y)) : 0;
   }
 
   me.execute = function() {
@@ -107,7 +99,7 @@ World = function(len) {
   
     for (i = 0; i < size_; i++) {
       cell = grid_[i];
-      numLiveNeighbours = me.numLiveNeighbourCells(Math.floor(i/len), i%len);
+      numLiveNeighbours = me.numLiveNeighbourCellsAt(Math.floor(i/len), i%len);
       if ( (cell.alive && 
            (numLiveNeighbours <= 1 || numLiveNeighbours >= 4)) ||
            (!cell.live && numLiveNeighbours === 3) ) {
