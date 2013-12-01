@@ -110,19 +110,23 @@ describe("Conway", function() {
       expect(world.getCellAt(1, 0).alive).toBeTruthy();
     });
 
-    it("rule 3 - kill the live if there are greater than 3 live neighbours", function() {
+    it("rule 3 - kill the live cell if there are greater than 3 live neighbours", function() {
       world.toggleCellStateAt(2, 0);
+      world.toggleCellStateAt(2, 1);
       world.toggleCellStateAt(1, 1);
-      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(3);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(4);
       world.execute();
       expect(world.getCellAt(1, 1).alive).toBeFalsy();
     });
 
     it("rule 4 - revive the dead cell if there are 3 live neighbours", function() {
       world.toggleCellStateAt(2, 0);
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(3);
+      expect(world.getCellAt(1, 1).alive).toBeFalsy();
       world.execute();
+       expect(world.numLiveNeighbourCellsAt(1, 0)).toEqual(1);
       expect(world.getCellAt(1, 1).alive).toBeTruthy();
-      expect(world.numLiveNeighbourCellsAt(1, 0)).toEqual(1);
+     
     });
   });
 });

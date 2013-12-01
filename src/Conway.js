@@ -12,8 +12,21 @@ The world is representated as an 1d array of Cells:
 
 Cell = function() {
   var me = {};
+  this.alive = false;
 
-  me.alive = false;
+  me.isStateChanging = function(numLiveNeighbours) {
+    return this.alive ?
+           (numLiveNeighbours <= 1 || numLiveNeighbours >= 4) :
+           numLiveNeighbours === 3
+  }
+
+  me.changeState = function() {
+    this.alive = !this.alive;
+  }
+
+  me.isAlive = function() {
+    return this.alive;
+  }
 
   return me;
 };
@@ -62,14 +75,14 @@ World = function(len) {
   me.getCellAt = checkBoundariesApplyFunc(getCellAt);
 
   me.toggleCellStateAt = function(x, y) {
-    var cell = me.getCellAt(x, y) || new Cell();
-    cell.alive = !cell.alive;
+    var cell = me.getCellAt(x, y);
+    if (cell) cell.changeState();
   }
 
   me.numLiveCells = function(cellArray) {
     var arr = cellArray || grid_;
     return arr.reduce(function(counter, cell) {
-      return (cell.alive) ? counter + 1 : counter;
+      return (cell.isAlive()) ? counter + 1 : counter;
     }, 0);
   }
 
@@ -79,21 +92,17 @@ World = function(len) {
   }
 
   me.execute = function() {
-    var cell, numLiveNeighbours,
+    var numLiveNeighbours,
       idxes = [], i;
   
     for (i = 0; i < size_; i++) {
-      cell = grid_[i];
       numLiveNeighbours = me.numLiveNeighbourCellsAt(Math.floor(i/len), i%len);
-      if ( (cell.alive && 
-           (numLiveNeighbours <= 1 || numLiveNeighbours >= 4)) ||
-           (!cell.live && numLiveNeighbours === 3) ) {
+      if (grid_[i].isStateChanging(numLiveNeighbours))
         idxes.push(i);
-      }
     }
 
     for (i = 0; i < idxes.length; i++) {
-      grid_[idxes[i]].alive = !grid_[idxes[i]].alive;
+      grid_[idxes[i]].changeState();
     }
   }
 
