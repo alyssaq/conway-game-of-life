@@ -29,55 +29,40 @@ World = function(len) {
     }
   },
 
-  getGridIdx = function(x, y) {
-    return ((x * len) + y);
-  }
-
-  isWithinBoundaries = function(x, y) {
-    if (x < 0 || y < 0 || 
-        x >= len || y >= len) {
-        return false;
-    }
-    return true;
-  }
-
   checkBoundariesApplyFunc = function(func) {
     return function(x, y) {
-      return isWithinBoundaries(x, y) ? 
-        func.apply(me, arguments) : undefined;
+      if (x < 0 || y < 0 || 
+          x >= len || y >= len) return;
+      return func.apply(me, arguments);
     }
   },
 
   getCellAt = function(x, y) {
-    return grid_[getGridIdx(x, y)];
+    return grid_[(x * len) + y];
   },
 
-  getNeighboursAt = function(x, y) {
-    var numIdexes = 8, i = 0, pair,
-    indexes = [[x - 1, y - 1],
-               [x - 1, y],
-               [x - 1, y + 1],
-               [x, y - 1],
-               [x, y + 1],
-               [x + 1, y - 1],
-               [x + 1, y],
-               [x + 1, y + 1]];
-    
-    while (i < numIdexes) {
-      pair = indexes.shift();  
-      if (isWithinBoundaries(pair[0], pair[1])) {
-        indexes.push(grid_[getGridIdx(pair[0], pair[1])]);
-      }
-      i++;
-    }
+  getValidNeighboursAt = function(x, y) {
+    var idxes = [[x - 1, y - 1],
+           [x - 1, y],
+           [x - 1, y + 1],
+           [x, y - 1],
+           [x, y + 1],
+           [x + 1, y - 1],
+           [x + 1, y],
+           [x + 1, y + 1]];
 
-    return indexes;
+    return idxes.reduce(function(arr, pair) {
+      arr.push(me.getCellAt(pair[0], pair[1]));
+      return arr;
+    }, []).filter(function(cell) {
+      return cell !== undefined;
+    });
   };
   
   me.getCellAt = checkBoundariesApplyFunc(getCellAt);
 
   me.toggleCellStateAt = function(x, y) {
-    var cell = me.getCellAt(x, y) || {alive: false};
+    var cell = me.getCellAt(x, y) || new Cell();
     cell.alive = !cell.alive;
   }
 
@@ -90,7 +75,7 @@ World = function(len) {
 
   me.numLiveNeighbourCellsAt = function(x, y) {
     return me.getCellAt(x, y) ? 
-           me.numLiveCells(getNeighboursAt(x, y)) : 0;
+           me.numLiveCells(getValidNeighboursAt(x, y)) : 0;
   }
 
   me.execute = function() {
