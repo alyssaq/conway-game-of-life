@@ -77,14 +77,13 @@ World = function(len) {
   me.getCellAt = checkBoundariesApplyFunc(getCellAt);
 
   me.toggleCellStateAt = function(x, y) {
-    var cell = me.getCellAt(x, y);
-    if (cell) cell.alive = !cell.alive;
+    var cell = me.getCellAt(x, y) || {alive: false};
+    cell.alive = !cell.alive;
   }
 
   me.numLiveCells = function() {
     return grid_.reduce(function(counter, cell) {
-      if (cell.alive) counter++;
-      return counter;
+      return (cell.alive) ? counter + 1 : counter;
     }, 0);
   }
 
