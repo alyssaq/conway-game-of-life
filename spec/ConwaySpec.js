@@ -1,4 +1,46 @@
-describe("Conway", function() {
+describe("Cell", function() {
+  var cell;
+
+  beforeEach(function() {
+    cell = new Cell();
+  });
+
+  it("should be a dead cell by default", function() {
+    expect(cell.isAlive()).toBeFalsy();
+  });
+
+  it("should be revived by changing its state", function() {
+    cell.changeState();
+    expect(cell.isAlive()).toBeTruthy();
+  });
+
+  describe("should correctly check whether a cell state should change", function() {
+    it("is true for live cell if live neighbours is less than 2 or greater than 3", function() {
+      cell.changeState();
+      expect(cell.isStateChanging(0)).toBeTruthy();
+      expect(cell.isStateChanging(1)).toBeTruthy();
+      expect(cell.isStateChanging(4)).toBeTruthy();
+      expect(cell.isStateChanging(8)).toBeTruthy();
+    });
+
+    it("is false for live cell if live neighbours is 2 or 3", function() {
+      cell.changeState();
+      expect(cell.isStateChanging(2)).toBeFalsy();
+      expect(cell.isStateChanging(3)).toBeFalsy();
+    });
+
+    it("is true for dead cell if live neighbours is exactly 3", function() {
+      expect(cell.isStateChanging(3)).toBeTruthy();
+    });
+
+    it("is false for dead cell if live neighbours is not 3", function() {
+      expect(cell.isStateChanging(0)).toBeFalsy();
+      expect(cell.isStateChanging(7)).toBeFalsy();
+    });
+  });
+});
+
+describe("World", function() {
   var world;
 
   beforeEach(function() {
