@@ -92,18 +92,12 @@ World = function(len) {
   }
 
   me.execute = function() {
-    var numLiveNeighbours,
-      idxes = [], i;
-  
-    for (i = 0; i < size_; i++) {
-      numLiveNeighbours = me.numLiveNeighbourCellsAt(Math.floor(i/len), i%len);
-      if (grid_[i].isStateChanging(numLiveNeighbours))
-        idxes.push(i);
-    }
-
-    for (i = 0; i < idxes.length; i++) {
-      grid_[idxes[i]].changeState();
-    }
+    grid_.filter(function(cell, i) {
+      var numLiveNeighbours = me.numLiveNeighbourCellsAt(Math.floor(i/len), i%len);
+      return cell.isStateChanging(numLiveNeighbours);
+    }).forEach(function(cell) {
+      cell.changeState();
+    });
   }
 
   init();
