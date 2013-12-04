@@ -53,10 +53,10 @@ describe("World", function() {
 
   describe("should get the correct individual cell state", function() {
     it("is false by default", function() {
-      expect(world.getCellAt(0, 0).alive).toBeFalsy();
-      expect(world.getCellAt(0, 4).alive).toBeFalsy();
-      expect(world.getCellAt(4, 0).alive).toBeFalsy();
-      expect(world.getCellAt(4, 4).alive).toBeFalsy();
+      expect(world.getCellAt(0, 0).isAlive()).toBeFalsy();
+      expect(world.getCellAt(0, 4).isAlive()).toBeFalsy();
+      expect(world.getCellAt(4, 0).isAlive()).toBeFalsy();
+      expect(world.getCellAt(4, 4).isAlive()).toBeFalsy();
     });
 
     it("is undefined outside the world boundaries", function() {
@@ -72,16 +72,16 @@ describe("World", function() {
     });
 
     it("should turn the cell alive", function() {
-      expect(world.getCellAt(0, 0).alive).toBeTruthy();
-      expect(world.getCellAt(4, 4).alive).toBeTruthy();
+      expect(world.getCellAt(0, 0).isAlive()).toBeTruthy();
+      expect(world.getCellAt(4, 4).isAlive()).toBeTruthy();
       expect(world.numLiveCells()).toEqual(2);
     });
 
     it("should turn the cell dead", function() {
       world.toggleCellStateAt(0, 0);
-      expect(world.getCellAt(0, 0).alive).toBeFalsy();
+      expect(world.getCellAt(0, 0).isAlive()).toBeFalsy();
       world.toggleCellStateAt(4, 4);
-      expect(world.getCellAt(4, 4).alive).toBeFalsy();
+      expect(world.getCellAt(4, 4).isAlive()).toBeFalsy();
     });
 
     it("should do nothing to cells outside the world boundary", function() {
@@ -140,16 +140,16 @@ describe("World", function() {
     });
 
     it("rule 1 - kill the live cell if there are less than 2 live neighbours", function() {
-      expect(world.getCellAt(1, 0).alive).toBeTruthy();
+      expect(world.getCellAt(1, 0).isAlive()).toBeTruthy();
       world.execute();
-      expect(world.getCellAt(1, 0).alive).toBeFalsy();
+      expect(world.getCellAt(1, 0).isAlive()).toBeFalsy();
     });
 
     it("rule 2 - live cell remains alive if there are 2 or 3 live neighbours", function() {
       world.toggleCellStateAt(2, 0);
       expect(world.numLiveNeighbourCellsAt(1, 0)).toEqual(2);
       world.execute();
-      expect(world.getCellAt(1, 0).alive).toBeTruthy();
+      expect(world.getCellAt(1, 0).isAlive()).toBeTruthy();
     });
 
     it("rule 3 - kill the live cell if there are greater than 3 live neighbours", function() {
@@ -158,16 +158,16 @@ describe("World", function() {
       world.toggleCellStateAt(1, 1);
       expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(4);
       world.execute();
-      expect(world.getCellAt(1, 1).alive).toBeFalsy();
+      expect(world.getCellAt(1, 1).isAlive()).toBeFalsy();
     });
 
     it("rule 4 - revive the dead cell if there are 3 live neighbours", function() {
       world.toggleCellStateAt(2, 0);
       expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(3);
-      expect(world.getCellAt(1, 1).alive).toBeFalsy();
+      expect(world.getCellAt(1, 1).isAlive()).toBeFalsy();
       world.execute();
       expect(world.numLiveNeighbourCellsAt(1, 0)).toEqual(1);
-      expect(world.getCellAt(1, 1).alive).toBeTruthy();
+      expect(world.getCellAt(1, 1).isAlive()).toBeTruthy();
     });
   });
 });
