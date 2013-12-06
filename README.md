@@ -4,4 +4,4 @@ My Javascript implementation
 
 Jasmine Tests online
 --
-[test](http://alyssaq.github.io/conway-game-of-life/SpecRunner.html)
+[Tests](http://alyssaq.github.io/conway-game-of-life/SpecRunner.html)
