@@ -28,31 +28,31 @@ Cell = (function() {
   return Cell;
 })();
 
-World = (function(len) {
-  function World() {
-    this.grid_ = [], //Finite world representation 
+World = (function() {
+  function World(len) {
+    this.grid_ = []; //Finite world representation 
     this.size_ = len * len;
+    this.len_ = len;
+    that = this;
+
+    function init() {
+      for (var i = 0; i < that.size_; i++) {
+        that.grid_.push(new Cell());
+      }
+    }
+
+    init();
   }
 
-  var init = function() {
-    for (var i = 0; i < size_; i++) {
-      this.grid_.push(new Cell());
-    }
-  },
-
-  checkBoundariesApplyFunc = function(func) {
+  World.prototype.checkBoundariesApplyFunc = function(func) {
     return function(x, y) {
       if (x < 0 || y < 0 || 
-          x >= len || y >= len) return;
-      return func.apply(this, arguments);
+          x >= this.len_ || y >= this.len_) return;
+      return func.apply(that, arguments);
     }
-  },
+  };
 
-  getCellAt = function(x, y) {
-    return grid_[(x * len) + y];
-  },
-
-  getValidNeighboursAt = function(x, y) {
+  World.prototype.getValidNeighboursAt = function(x, y) {
     var idxes = [[x - 1, y - 1],
            [x - 1, y],
            [x - 1, y + 1],
@@ -65,12 +65,15 @@ World = (function(len) {
     return idxes.reduce(function(arr, pair) {
       arr.push(this.getCellAt(pair[0], pair[1]));
       return arr;
-    }, []).filter(function(cell) {
+    }.bind(this), []).filter(function(cell) {
       return cell !== undefined;
     });
   };
-  
-  World.prototype.getCellAt = checkBoundariesApplyFunc(getCellAt);
+
+  World.prototype.getCellAt = 
+    World.prototype.checkBoundariesApplyFunc(function(x, y) {
+      return this.grid_[(x * this.len_) + y];
+    });
 
   World.prototype.toggleCellStateAt = function(x, y) {
     var cell = this.getCellAt(x, y);
@@ -78,7 +81,7 @@ World = (function(len) {
   }
 
   World.prototype.numLiveCells = function(cellArray) {
-    var arr = cellArray || grid_;
+    var arr = cellArray || this.grid_;
     return arr.reduce(function(counter, cell) {
       return (cell.isAlive()) ? counter + 1 : counter;
     }, 0);
@@ -86,17 +89,17 @@ World = (function(len) {
 
   World.prototype.numLiveNeighbourCellsAt = function(x, y) {
     return this.getCellAt(x, y) ? 
-           this.numLiveCells(getValidNeighboursAt(x, y)) : 0;
+           this.numLiveCells(this.getValidNeighboursAt(x, y)) : 0;
   }
 
   World.prototype.execute = function() {
-    grid_.filter(function(cell, i) {
-      var numLiveNeighbours = this.numLiveNeighbourCellsAt(Math.floor(i/len), i%len);
+    this.grid_.filter(function(cell, i) {
+      var numLiveNeighbours = this.numLiveNeighbourCellsAt(Math.floor(i/this.len_), i%this.len_);
       return cell.isStateChanging(numLiveNeighbours);
-    }).forEach(function(cell) {
+    }.bind(this)).forEach(function(cell) {
       cell.changeState();
     });
   }
 
-  init();
+  return World; 
 })();
