@@ -34,7 +34,7 @@ Cell = function() {
 World = function(len) {
   var me = {}, 
     grid_ = [], //Finite world representation 
-    size_ = len * len;
+    size_ = len * len,
 
   init = function() {
     for (var i = 0; i < size_; i++) {
