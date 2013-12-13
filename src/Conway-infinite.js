@@ -1,11 +1,10 @@
-var Cell, World;
+var Cell, World, Helper;
 
 /*
 Conway's Game of Life
 
 Infinite world representation by
-storing the live cells in a grid.
-
+storing the live cells.
 */
 
 Cell = function(pair) {
@@ -39,6 +38,13 @@ Cell = function(pair) {
   return me;
 };
 
+Helper = {
+  hasPair: function(cellArr, yPoint) {
+    return cellArr.some(function(cell) {
+      return cell.y() === yPoint;
+    });
+  }
+};
 //World is given an array of [x, y] 
 // co-ordinates of live cells
 // E.g. [ [1, 2], [2, 4] ]
@@ -59,10 +65,10 @@ World = function(arr) {
       cell = new Cell(pair);
       liveCells_.push(cell);
       
-      x_.xPoint = x_.xPoint || [];
-      x_.xPoint.push(cell);
-      y_.yPoint = y_.yPoint || [];
-      y_.yPoint.push(cell);
+      x_[xPoint.toString()] = x_[xPoint.toString()] || [];
+      x_[xPoint.toString()].push(cell);
+      y_[yPoint.toString()]= y_[yPoint.toString()] || [];
+      y_[yPoint.toString()].push(cell);
     }
   }
   
@@ -79,7 +85,22 @@ World = function(arr) {
   }
 
   me.numLiveNeighbourCellsAt = function(x, y) {
-    
+    var idxes = [[x - 1, y - 1],
+           [x - 1, y],
+           [x - 1, y + 1],
+           [x, y - 1],
+           [x, y + 1],
+           [x + 1, y - 1],
+           [x + 1, y],
+           [x + 1, y + 1]],
+
+    res = idxes.filter(function(pair) {
+      var cellArr = x_[pair[0]] || [];
+      return Helper.hasPair(cellArr, pair[1]);
+     // if (x_[xPoint])
+    });
+
+    return res.length;
   }
 
   me.execute = function() {

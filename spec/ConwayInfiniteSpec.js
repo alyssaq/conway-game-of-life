@@ -45,17 +45,42 @@ describe("Cell", function() {
   });
 });
 
+describe("Helper", function() {
+  describe("testing hasPair", function() {
+    it("should return whether a y-point exists", function() {
+      var cellArr = [new Cell([1, 2]), new Cell([2, 3])];
+      expect(Helper.hasPair(cellArr, 2)).toBeTruthy();
+      expect(Helper.hasPair(cellArr, 1)).toBeFalsy();
+    });
+  });
+});
+
 describe("World", function() {
   var world;
 
   beforeEach(function() {
     world = new World([
-      [1, 1], [2, 1], [1, 2]
+      [1, 1], [2, 1], [1, 2], [4, 4]
     ]);
   });
 
   it("should return the right number of live cells", function() {
-    expect(world.numLiveCells()).toEqual(3);
+    expect(world.numLiveCells()).toEqual(4);
+  });
+
+  describe("should get correct number of live neighbour cells", function() {
+    it("should have live neighbours", function() {
+      expect(world.numLiveNeighbourCellsAt(1, 1)).toEqual(2);
+      expect(world.numLiveNeighbourCellsAt(2, 1)).toEqual(2);
+      expect(world.numLiveNeighbourCellsAt(1, 2)).toEqual(2);
+      expect(world.numLiveNeighbourCellsAt(4, 4)).toEqual(0);
+    });
+
+
+    it("should have no live neighbours outside boundaries", function() {
+      expect(world.numLiveNeighbourCellsAt(-1, -1)).toEqual(0);
+      expect(world.numLiveNeighbourCellsAt(6, 5)).toEqual(0);
+    });
   });
 
   describe("should execute the 4 rules correctly", function() {

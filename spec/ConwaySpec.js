@@ -129,7 +129,6 @@ describe("World", function() {
       expect(world.numLiveNeighbourCellsAt(-1, -1)).toEqual(0);
       expect(world.numLiveNeighbourCellsAt(4, 5)).toEqual(0);
     });
-
   });
 
   describe("should execute the 4 rules correctly", function() {
