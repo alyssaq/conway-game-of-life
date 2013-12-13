@@ -8,10 +8,10 @@ storing the live cells.
 */
 
 Cell = function(pair) {
-  var me = {},
+  var me = {xx: pair[0], yy: pair[1]},
     x_ = pair[0],
     y_ = pair[1],
-    alive_ = false;
+    alive_ = true;
 
   me.isStateChanging = function(numLiveNeighbours) {
     return alive_ ?
@@ -40,6 +40,7 @@ Cell = function(pair) {
 
 Helper = {
   hasPair: function(cellArr, yPoint) {
+    cellArr = cellArr || [];
     return cellArr.some(function(cell) {
       return cell.y() === yPoint;
     });
@@ -52,7 +53,6 @@ World = function(arr) {
   var me = {}, 
     liveCells_ = [], //world represented by live cells
     x_ = {}, // x co-ordinates to pointer to liveCells_
-    y_ = {}, // y co-ordinates to pointer to liveCells_
 
   init = function() {
     //initialise a random world if arr === 0
@@ -67,44 +67,89 @@ World = function(arr) {
       
       x_[xPoint.toString()] = x_[xPoint.toString()] || [];
       x_[xPoint.toString()].push(cell);
-      y_[yPoint.toString()]= y_[yPoint.toString()] || [];
-      y_[yPoint.toString()].push(cell);
     }
-  }
-  
-  me.getCellAt = function() {
+  },
 
-  }
-
-  me.toggleCellStateAt = function(x, y) {
-
-  }
-
-  me.numLiveCells = function() {
-    return liveCells_.length;
-  }
-
-  me.numLiveNeighbourCellsAt = function(x, y) {
-    var idxes = [[x - 1, y - 1],
+  getNeighbourIndexesAt = function(x, y) {
+    return idxes = [[x - 1, y - 1],
            [x - 1, y],
            [x - 1, y + 1],
            [x, y - 1],
            [x, y + 1],
            [x + 1, y - 1],
            [x + 1, y],
-           [x + 1, y + 1]],
+           [x + 1, y + 1]];
+  },
+  
+  getNeighbourCells = function(cell) {
+    var x = cell.x(),
+      y = cell.y();
 
-    res = idxes.filter(function(pair) {
-      var cellArr = x_[pair[0]] || [];
-      return Helper.hasPair(cellArr, pair[1]);
-     // if (x_[xPoint])
-    });
+    return idxes = [
+      new Cell([x - 1, y - 1]),
+          Cell([x - 1, y]),
+          Cell([x - 1, y + 1]),
+          Cell([x, y - 1]),
+          Cell([x, y + 1]),
+          Cell([x + 1, y - 1]),
+          Cell([x + 1, y]),
+          Cell([x + 1, y + 1])];
+  };
+
+  me.numLiveCells = function() {
+    return liveCells_.length;
+  }
+
+  me.numLiveNeighbourCellsAt = function(x, y) {
+    var idxes = getNeighbourIndexesAt(x, y),
+      res = idxes.filter(function(pair) {
+        return Helper.hasPair(x_[pair[0]], pair[1]);
+      });
 
     return res.length;
   }
 
-  me.execute = function() {
+  var numLiveNeighbourCells = function(cell) {
+    return me.numLiveNeighbourCellsAt(cell.x(), cell.y());
+  }
 
+  me.isCellAliveAt = function(x, y) {
+    return Helper.hasPair(x_[x], y);
+  }
+
+  me.execute = function() {
+    var potentialLiveCells = [];
+    liveCells_ = liveCells_.filter(function(cell, i) {
+      var neighbourCells = getNeighbourCells(cell),
+        numLiveNeighbours = 0;
+
+      //Process the neighbours of this live cell
+      neighbourCells.forEach(function(neighbourCell) {
+        var cellArr = x_[neighbourCell.x()] || [];
+        if (Helper.hasPair(cellArr, neighbourCell.y())) {
+          //this neighbour is a live cell
+          numLiveNeighbours++;
+        } else {
+          //this neighbour is a dead cell
+          neighbourCell.changeState();
+          potentialLiveCells.push(neighbourCell);
+        }
+      });
+
+      if (cell.isStateChanging(numLiveNeighbours)) {
+        liveCells_[i].length = 0; //clear the liveCell xy
+        if (x_[cell.x()].length <= 1) {
+          delete x_[cell.x()];
+        }
+        return false;
+      }
+      return true;
+    });
+
+    //TODO: Rule 4.
+    liveCells_.concat(potentialLiveCells.filter(function(cell) {
+      return cell.isStateChanging(numLiveNeighbourCells(cell));
+    }));
   }
 
   init();
