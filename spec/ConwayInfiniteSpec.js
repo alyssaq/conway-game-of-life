@@ -6,38 +6,13 @@ describe("Cell", function() {
   });
 
   it("should be initialised with x and y", function() {
-    expect(cell.x()).toEqual(2);
-    expect(cell.y()).toEqual(3);
+    expect(cell.x).toEqual(2);
+    expect(cell.y).toEqual(3);
   });
 
   it("should return the correct id hash", function() {
-    expect(cell.hash()).toEqual("2,3");
+    expect(cell.id).toEqual("2,3");
   });
-
-  // describe("should correctly check whether a cell state should change", function() {
-  //   it("is true for live cell if live neighbours is less than 2 or greater than 3", function() {
-  //     expect(cell.isStateChanging(0)).toBeTruthy();
-  //     expect(cell.isStateChanging(1)).toBeTruthy();
-  //     expect(cell.isStateChanging(4)).toBeTruthy();
-  //     expect(cell.isStateChanging(8)).toBeTruthy();
-  //   });
-
-  //   it("is false for live cell if live neighbours is 2 or 3", function() {
-  //     expect(cell.isStateChanging(2)).toBeFalsy();
-  //     expect(cell.isStateChanging(3)).toBeFalsy();
-  //   });
-
-  //   it("is true for dead cell if live neighbours is exactly 3", function() {
-  //     cell.changeState();
-  //     expect(cell.isStateChanging(3)).toBeTruthy();
-  //   });
-
-  //   it("is false for dead cell if live neighbours is not 3", function() {
-  //     cell.changeState();
-  //     expect(cell.isStateChanging(0)).toBeFalsy();
-  //     expect(cell.isStateChanging(7)).toBeFalsy();
-  //   });
-  // });
 });
 
 describe("World", function() {
@@ -55,7 +30,7 @@ describe("World", function() {
 
   describe("checking getCellAt", function() {
     it("should get an existing cell", function() {
-      expect(world.getCellAt(1, 1).hash()).toEqual("1,1");
+      expect(world.getCellAt(1, 1).id).toEqual("1,1");
     });
 
     it("should return undefined for non-existent cell", function() {

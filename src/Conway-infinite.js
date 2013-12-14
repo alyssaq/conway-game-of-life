@@ -14,30 +14,20 @@ Helper = {
 };
 
 Cell = function(pair) {
-  var me = {},
-    x_ = pair[0],
+  var x_ = pair[0],
     y_ = pair[1];
 
-  me.x = function() {
-    return x_;
+  return {
+    x: x_,
+    y: y_,
+    id: Helper.cellHash(x_, y_)
   }
-
-  me.y = function() {
-    return y_;
-  }
-
-  me.hash = function() {
-    return Helper.cellHash(x_, y_);
-  }
-
-  return me;
 };
 
 
 //World is given an array of [x, y] 
 // co-ordinates of live cells
 // E.g. [ [1, 2], [2, 4] ]
-// Store the 
 World = function(arr) {
   var me = {}, 
     cellsObj_ = {};
@@ -46,13 +36,13 @@ World = function(arr) {
     //TODO: initialise a random world if arr === 0
     arr.forEach(function(pair) {
       var cell = new Cell(pair);
-      cellsObj_[cell.hash()] = cell;
+      cellsObj_[cell.id] = cell;
     });
   },
   
   getNeighbourCells = function(cell) {
-    var x = cell.x(),
-      y = cell.y();
+    var x = cell.x,
+      y = cell.y;
 
     return idxes = [
       new Cell([x - 1, y - 1]),
@@ -66,7 +56,7 @@ World = function(arr) {
   },
 
   containsCell = function(cell) {
-    return cellsObj_[cell.hash()] || false;
+    return cellsObj_[cell.id] || false;
   },
   
   me.contains = function(x, y) {
@@ -110,7 +100,7 @@ World = function(arr) {
           numLiveNeighbours++;
         } else {
           //this neighbour is a dead cell
-          deadCells[neighbourCell.hash()] = neighbourCell;
+          deadCells[neighbourCell.id] = neighbourCell;
         }
       });
 
