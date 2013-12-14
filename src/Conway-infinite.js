@@ -11,34 +11,12 @@ Helper = {
   cellHash: function(x, y) {
     return x + "," + y;
   },
-
-  hasPair: function(cellArr, yPoint) {
-    cellArr = cellArr || [];
-    return cellArr.some(function(cell) {
-      return cell.y() === yPoint;
-    });
-  }
 };
 
 Cell = function(pair) {
-  var me = {xx: pair[0], yy: pair[1]},
+  var me = {},
     x_ = pair[0],
-    y_ = pair[1],
-    alive_ = true;
-
-  me.isStateChanging = function(numLiveNeighbours) {
-    return alive_ ?
-           (numLiveNeighbours <= 1 || numLiveNeighbours >= 4) :
-           numLiveNeighbours === 3
-  }
-
-  me.changeState = function() {
-    alive_ = !alive_;
-  }
-
-  me.isAlive = function() {
-    return alive_;
-  }
+    y_ = pair[1];
 
   me.x = function() {
     return x_;
@@ -62,36 +40,14 @@ Cell = function(pair) {
 // Store the 
 World = function(arr) {
   var me = {}, 
-    liveCells_ = [], //world represented by live cells
-    cellsObj_ = {},
-    x_ = {}, // x co-ordinates to pointer to liveCells_
+    cellsObj_ = {};
 
   init = function() {
-    //initialise a random world if arr === 0
-    var i, xPoint, yPoint, pair, cell;
-
-    for (i = 0; i < arr.length; i++) {
-      pair = arr[i];
-      xPoint = pair[0];
-      yPoint = pair[1];
-      cell = new Cell(pair);
-      liveCells_.push(cell);
-      
-      x_[xPoint.toString()] = x_[xPoint.toString()] || [];
-      x_[xPoint.toString()].push(cell);
+    //TODO: initialise a random world if arr === 0
+    arr.forEach(function(pair) {
+      var cell = new Cell(pair);
       cellsObj_[cell.hash()] = cell;
-    }
-  },
-
-  getNeighbourIndexesAt = function(x, y) {
-    return idxes = [[x - 1, y - 1],
-           [x - 1, y],
-           [x - 1, y + 1],
-           [x, y - 1],
-           [x, y + 1],
-           [x + 1, y - 1],
-           [x + 1, y],
-           [x + 1, y + 1]];
+    });
   },
   
   getNeighbourCells = function(cell) {
@@ -112,7 +68,8 @@ World = function(arr) {
   containsCell = function(cell) {
     return cellsObj_[cell.hash()] || false;
   },
-  containsXY = function(x, y) {
+  
+  me.contains = function(x, y) {
     return cellsObj_[Helper.cellHash(x, y)] || false;
   };
   
@@ -121,26 +78,18 @@ World = function(arr) {
   }
 
   me.numLiveNeighbourCellsAt = function(x, y) {
-    //if (!containsXY(x, y)) return 0;
     return me.numLiveNeighbourCells(me.getCellAt(x, y));
   }
 
   me.numLiveNeighbourCells = function(cell) {
-    //if (!containsCell(cell)) return 0;
     var neighbourCells = getNeighbourCells(cell);
     return neighbourCells.filter(function(neighbour) {
       return containsCell(neighbour);
     }).length;
   }
 
-
   me.getCellAt = function(x, y) {
     return cellsObj_[Helper.cellHash(x, y)];
-  }
-
-  me.isCellAliveAt = function(x, y) {
-    var cell = cellsObj_[Helper.cellHash(x, y)];
-    return cell ? cell.isAlive() : false;
   }
 
   me.run = function() {
@@ -165,13 +114,13 @@ World = function(arr) {
         }
       });
 
-      return !cell.isStateChanging(numLiveNeighbours);
+      return (numLiveNeighbours === 2 || numLiveNeighbours === 3);
     });
 
     //Process the dead cells for the 4th rule
     var toLive = _.pick(deadCells, function(cell) {
       var numLiveNeighbours = me.numLiveNeighbourCells(cell);
-      return !cell.isStateChanging(numLiveNeighbours);
+      return numLiveNeighbours === 3;
     });
 
     cellsObj_ = _.merge(nextGenCells, toLive);
