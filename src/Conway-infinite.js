@@ -22,7 +22,14 @@ Cell = function(pair) {
     me = {
       x: xPoint,
       y: yPoint,
-      id: Helper.cellHash(xPoint, yPoint)
+      alive: true,
+      id: Helper.cellHash(xPoint, yPoint),
+      kill: function() {
+        this.alive = false;
+      },
+      revive: function() {
+        this.alive = true;
+      }
     };
 
   return me;
@@ -40,7 +47,7 @@ Grid = function(cell) {
 
   init = function() {
     grid = [
-      new Cell([x - 1, y - 1]),
+          Cell([x - 1, y - 1]),
           Cell([x - 1, y]),
           Cell([x - 1, y + 1]),
           Cell([x, y - 1]),
@@ -71,13 +78,25 @@ Grid = function(cell) {
 // E.g. [ [1, 2], [2, 4] ]
 World = function(arr) {
   var me = {}, 
-    cellsObj_ = {};
+    cellsObj_ = {},
+    liveCellsObj_ = {},
+    deadCellsObj_ = {};
 
   init = function() {
     //TODO: initialise a random world if arr === 0
     arr.forEach(function(pair) {
-      var cell = new Cell(pair);
+      var cell = Cell(pair);
       cellsObj_[cell.id] = cell;
+      liveCellsObj_[cell.id] = cell;
+    });
+
+    //For each live cell, store the neighbouring dead cells
+    _(liveCellsObj_).each(function(cell) {
+      var neighbours = Grid(cell).getCells();
+      neighbours.reduce(function(res, cell) { 
+        if (liveCellsObj_[cell.id]) return;
+        deadCellsObj_[cell.id] = cell;
+      }, deadCellsObj_);
     });
   },
 

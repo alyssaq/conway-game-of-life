@@ -10,6 +10,21 @@ describe("Cell", function() {
     expect(cell.y).toEqual(3);
   });
 
+  it("should be a live cell by default", function() {
+    expect(cell.alive).toBeTruthy();
+  });
+
+  it("should be a dead cell by killing it", function() {
+    cell.kill();
+    expect(cell.alive).toBeFalsy();
+  });
+
+  it("should be a live cell by reviving it", function() {
+    cell.kill();
+    cell.revive();
+    expect(cell.alive).toBeTruthy();
+  });
+
   it("should return the correct id hash", function() {
     expect(cell.id).toEqual("2,3");
   });
