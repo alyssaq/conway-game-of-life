@@ -1,4 +1,4 @@
-var Cell, World, Helper;
+var Cell, Grid, World, Helper;
 
 /*
 Conway's Game of Life
@@ -13,16 +13,57 @@ Helper = {
   },
 };
 
+/* A Cell stores its x, y and a unique id
+ * @input: pair - [x, y]
+ */
 Cell = function(pair) {
-  var x_ = pair[0],
-    y_ = pair[1];
+  var xPoint = pair[0],
+    yPoint = pair[1],
+    me = {
+      x: xPoint,
+      y: yPoint,
+      id: Helper.cellHash(xPoint, yPoint)
+    };
 
-  return {
-    x: x_,
-    y: y_,
-    id: Helper.cellHash(x_, y_)
-  }
+  return me;
 };
+
+/* Grid is an object of 
+ * neighbouring cells.
+ * A cell can have max 8 neighbour cells
+ */
+Grid = function(cell) {
+  var x = cell.x,
+      y = cell.y,
+      grid = [],
+      me = {},
+
+  init = function() {
+    grid = [
+      new Cell([x - 1, y - 1]),
+          Cell([x - 1, y]),
+          Cell([x - 1, y + 1]),
+          Cell([x, y - 1]),
+          Cell([x, y + 1]),
+          Cell([x + 1, y - 1]),
+          Cell([x + 1, y]),
+          Cell([x + 1, y + 1])
+    ];
+  };
+
+  me.getCells = function() {
+    return grid;
+  }
+
+  me.numLiveCells = function(liveCellObj) {
+    return grid.filter(function(cell) {
+      return liveCellObj[cell.id] || false;
+    }).length;
+  }
+
+  init();
+  return me;
+}
 
 
 //World is given an array of [x, y] 
@@ -38,21 +79,6 @@ World = function(arr) {
       var cell = new Cell(pair);
       cellsObj_[cell.id] = cell;
     });
-  },
-  
-  getNeighbourCells = function(cell) {
-    var x = cell.x,
-      y = cell.y;
-
-    return idxes = [
-      new Cell([x - 1, y - 1]),
-          Cell([x - 1, y]),
-          Cell([x - 1, y + 1]),
-          Cell([x, y - 1]),
-          Cell([x, y + 1]),
-          Cell([x + 1, y - 1]),
-          Cell([x + 1, y]),
-          Cell([x + 1, y + 1])];
   },
 
   containsCell = function(cell) {
@@ -72,10 +98,7 @@ World = function(arr) {
   }
 
   me.numLiveNeighbourCells = function(cell) {
-    var neighbourCells = getNeighbourCells(cell);
-    return neighbourCells.filter(function(neighbour) {
-      return containsCell(neighbour);
-    }).length;
+    return new Grid(cell).numLiveCells(cellsObj_);
   }
 
   me.getCellAt = function(x, y) {
@@ -90,7 +113,7 @@ World = function(arr) {
     // return the cells that are not changing state
     var deadCells = {},
       nextGenCells = _.pick(cellsObj_, function(cell) {
-      var neighbourCells = getNeighbourCells(cell),
+      var neighbourCells = new Grid(cell).getCells(),
         numLiveNeighbours = 0;
 
       //Process the neighbours of this live cell
