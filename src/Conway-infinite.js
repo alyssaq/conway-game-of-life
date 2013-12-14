@@ -1,4 +1,4 @@
-var Cell, Grid, World, Helper;
+var Cell, Neighbours, World, Helper;
 
 /*
 Conway's Game of Life
@@ -10,10 +10,10 @@ storing the live cells.
 Helper = {
   cellHash: function(x, y) {
     return x + "," + y;
-  },
+  }
 };
 
-/* A Cell stores its x, y and a unique id
+/* A Cell stores its x, y
  * @input: pair - [x, y]
  */
 Cell = function(pair) {
@@ -22,60 +22,37 @@ Cell = function(pair) {
     me = {
       x: xPoint,
       y: yPoint,
-      alive: true,
+      numLiveNeighbours: 0,
       id: Helper.cellHash(xPoint, yPoint),
-      kill: function() {
-        this.alive = false;
-      },
-      revive: function() {
-        this.alive = true;
-      }
     };
 
   return me;
 };
 
-/* Grid is an object of 
- * neighbouring cells.
+/* Array of neighbouring cells.
  * A cell can have max 8 neighbour cells
  */
-Grid = function(cell) {
+Neighbours = function(cell) {
   var x = cell.x,
-      y = cell.y,
-      grid = [],
-      me = {},
+      y = cell.y;
 
-  init = function() {
-    grid = [
-          Cell([x - 1, y - 1]),
-          Cell([x - 1, y]),
-          Cell([x - 1, y + 1]),
-          Cell([x, y - 1]),
-          Cell([x, y + 1]),
-          Cell([x + 1, y - 1]),
-          Cell([x + 1, y]),
-          Cell([x + 1, y + 1])
-    ];
-  };
-
-  me.getCells = function() {
-    return grid;
-  }
-
-  me.numLiveCells = function(liveCellObj) {
-    return grid.filter(function(cell) {
-      return liveCellObj[cell.id] || false;
-    }).length;
-  }
-
-  init();
-  return me;
+  return ([
+    Cell([x - 1, y - 1]),
+    Cell([x - 1, y]),
+    Cell([x - 1, y + 1]),
+    Cell([x, y - 1]),
+    Cell([x, y + 1]),
+    Cell([x + 1, y - 1]),
+    Cell([x + 1, y]),
+    Cell([x + 1, y + 1])
+  ]);
 }
 
 
-//World is given an array of [x, y] 
-// co-ordinates of live cells
-// E.g. [ [1, 2], [2, 4] ]
+/* World is given an array of [x, y] 
+ * co-ordinates of live cells
+ * E.g. [ [1, 2], [2, 4] ]
+ */
 World = function(arr) {
   var me = {}, 
     cellsObj_ = {},
@@ -92,71 +69,46 @@ World = function(arr) {
 
     //For each live cell, store the neighbouring dead cells
     _(liveCellsObj_).each(function(cell) {
-      var neighbours = Grid(cell).getCells();
-      neighbours.reduce(function(res, cell) { 
-        if (liveCellsObj_[cell.id]) return;
-        deadCellsObj_[cell.id] = cell;
-      }, deadCellsObj_);
+      var neighbours = Neighbours(cell);
+      neighbours.forEach(function(cell) { 
+        if (liveCellsObj_[cell.id]) {
+          liveCellsObj_[cell.id].numLiveNeighbours += 1;
+        } else {
+          deadCellsObj_[cell.id] = deadCellsObj_[cell.id] || cell;
+          deadCellsObj_[cell.id].numLiveNeighbours += 1;
+        }
+      });
     });
-  },
-
-  containsCell = function(cell) {
-    return cellsObj_[cell.id] || false;
-  },
+  };
   
   me.contains = function(x, y) {
-    return cellsObj_[Helper.cellHash(x, y)] || false;
+    return liveCellsObj_[Helper.cellHash(x, y)] ? true : false;
   };
   
   me.numLiveCells = function() {
-    return Object.keys(cellsObj_).length;
+    return Object.keys(liveCellsObj_).length;
   }
 
   me.numLiveNeighbourCellsAt = function(x, y) {
-    return me.numLiveNeighbourCells(me.getCellAt(x, y));
-  }
-
-  me.numLiveNeighbourCells = function(cell) {
-    return new Grid(cell).numLiveCells(cellsObj_);
+    var cell = me.getCellAt(x, y);
+    return cell ? cell.numLiveNeighbours : 0;
   }
 
   me.getCellAt = function(x, y) {
-    return cellsObj_[Helper.cellHash(x, y)];
+    return liveCellsObj_[Helper.cellHash(x, y)];
   }
 
-  me.run = function() {
-    //go through the live cells obj
-    // get the neighbours of the live cell
-    // if the neighbour is alive, increment count
-    // if it is dead, place it in a deadCellObj
-    // return the cells that are not changing state
-    var deadCells = {},
-      nextGenCells = _.pick(cellsObj_, function(cell) {
-      var neighbourCells = new Grid(cell).getCells(),
-        numLiveNeighbours = 0;
-
-      //Process the neighbours of this live cell
-      neighbourCells.forEach(function(neighbourCell) {
-        if (containsCell(neighbourCell)) {
-          //this neighbour is a live cell
-          numLiveNeighbours++;
-        } else {
-          //this neighbour is a dead cell
-          deadCells[neighbourCell.id] = neighbourCell;
-        }
-      });
-
-      return (numLiveNeighbours === 2 || numLiveNeighbours === 3);
+  me.execute = function() {
+    var nextGenCells = _.pick(liveCellsObj_, function(cell) {
+      return (cell.numLiveNeighbours === 2 || cell.numLiveNeighbours === 3);
     });
 
-    //Process the dead cells for the 4th rule
-    var toLive = _.pick(deadCells, function(cell) {
-      var numLiveNeighbours = me.numLiveNeighbourCells(cell);
-      return numLiveNeighbours === 3;
+    var toLive = _.pick(deadCellsObj_, function(cell) {
+      return cell.numLiveNeighbours === 3;
     });
-
-    cellsObj_ = _.merge(nextGenCells, toLive);
+    liveCellsObj_ = _.merge(nextGenCells, toLive);
   }
+
   init();
   return me;
 };
