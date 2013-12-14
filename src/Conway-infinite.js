@@ -7,6 +7,19 @@ Infinite world representation by
 storing the live cells.
 */
 
+Helper = {
+  cellHash: function(x, y) {
+    return x + "," + y;
+  },
+
+  hasPair: function(cellArr, yPoint) {
+    cellArr = cellArr || [];
+    return cellArr.some(function(cell) {
+      return cell.y() === yPoint;
+    });
+  }
+};
+
 Cell = function(pair) {
   var me = {xx: pair[0], yy: pair[1]},
     x_ = pair[0],
@@ -35,23 +48,22 @@ Cell = function(pair) {
     return y_;
   }
 
+  me.hash = function() {
+    return Helper.cellHash(x_, y_);
+  }
+
   return me;
 };
 
-Helper = {
-  hasPair: function(cellArr, yPoint) {
-    cellArr = cellArr || [];
-    return cellArr.some(function(cell) {
-      return cell.y() === yPoint;
-    });
-  }
-};
+
 //World is given an array of [x, y] 
 // co-ordinates of live cells
 // E.g. [ [1, 2], [2, 4] ]
+// Store the 
 World = function(arr) {
   var me = {}, 
     liveCells_ = [], //world represented by live cells
+    cellsObj_ = {},
     x_ = {}, // x co-ordinates to pointer to liveCells_
 
   init = function() {
@@ -67,6 +79,7 @@ World = function(arr) {
       
       x_[xPoint.toString()] = x_[xPoint.toString()] || [];
       x_[xPoint.toString()].push(cell);
+      cellsObj_[cell.hash()] = cell;
     }
   },
 
@@ -94,64 +107,75 @@ World = function(arr) {
           Cell([x + 1, y - 1]),
           Cell([x + 1, y]),
           Cell([x + 1, y + 1])];
-  };
+  },
 
+  containsCell = function(cell) {
+    return cellsObj_[cell.hash()] || false;
+  },
+  containsXY = function(x, y) {
+    return cellsObj_[Helper.cellHash(x, y)] || false;
+  };
+  
   me.numLiveCells = function() {
-    return liveCells_.length;
+    return Object.keys(cellsObj_).length;
   }
 
   me.numLiveNeighbourCellsAt = function(x, y) {
-    var idxes = getNeighbourIndexesAt(x, y),
-      res = idxes.filter(function(pair) {
-        return Helper.hasPair(x_[pair[0]], pair[1]);
-      });
-
-    return res.length;
+    //if (!containsXY(x, y)) return 0;
+    return me.numLiveNeighbourCells(me.getCellAt(x, y));
   }
 
-  var numLiveNeighbourCells = function(cell) {
-    return me.numLiveNeighbourCellsAt(cell.x(), cell.y());
+  me.numLiveNeighbourCells = function(cell) {
+    //if (!containsCell(cell)) return 0;
+    var neighbourCells = getNeighbourCells(cell);
+    return neighbourCells.filter(function(neighbour) {
+      return containsCell(neighbour);
+    }).length;
+  }
+
+
+  me.getCellAt = function(x, y) {
+    return cellsObj_[Helper.cellHash(x, y)];
   }
 
   me.isCellAliveAt = function(x, y) {
-    return Helper.hasPair(x_[x], y);
+    var cell = cellsObj_[Helper.cellHash(x, y)];
+    return cell ? cell.isAlive() : false;
   }
 
-  me.execute = function() {
-    var potentialLiveCells = [];
-    liveCells_ = liveCells_.filter(function(cell, i) {
+  me.run = function() {
+    //go through the live cells obj
+    // get the neighbours of the live cell
+    // if the neighbour is alive, increment count
+    // if it is dead, place it in a deadCellObj
+    // return the cells that are not changing state
+    var deadCells = {},
+      nextGenCells = _.pick(cellsObj_, function(cell) {
       var neighbourCells = getNeighbourCells(cell),
         numLiveNeighbours = 0;
 
       //Process the neighbours of this live cell
       neighbourCells.forEach(function(neighbourCell) {
-        var cellArr = x_[neighbourCell.x()] || [];
-        if (Helper.hasPair(cellArr, neighbourCell.y())) {
+        if (containsCell(neighbourCell)) {
           //this neighbour is a live cell
           numLiveNeighbours++;
         } else {
           //this neighbour is a dead cell
-          neighbourCell.changeState();
-          potentialLiveCells.push(neighbourCell);
+          deadCells[neighbourCell.hash()] = neighbourCell;
         }
       });
 
-      if (cell.isStateChanging(numLiveNeighbours)) {
-        liveCells_[i].length = 0; //clear the liveCell xy
-        if (x_[cell.x()].length <= 1) {
-          delete x_[cell.x()];
-        }
-        return false;
-      }
-      return true;
+      return !cell.isStateChanging(numLiveNeighbours);
     });
 
-    //TODO: Rule 4.
-    liveCells_.concat(potentialLiveCells.filter(function(cell) {
-      return cell.isStateChanging(numLiveNeighbourCells(cell));
-    }));
-  }
+    //Process the dead cells for the 4th rule
+    var toLive = _.pick(deadCells, function(cell) {
+      var numLiveNeighbours = me.numLiveNeighbourCells(cell);
+      return !cell.isStateChanging(numLiveNeighbours);
+    });
 
+    cellsObj_ = _.merge(nextGenCells, toLive);
+  }
   init();
   return me;
 };
